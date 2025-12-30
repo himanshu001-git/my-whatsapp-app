@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Clone</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Emoji Picker -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Login Modal -->
+        <div id="login-screen"
+            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); display: flex; align-items: center; justify-content: center; z-index: 1000; background: #111b21;">
+            <div style="background: #202c33; padding: 40px; border-radius: 10px; text-align: center; width: 350px;">
+                <h2 style="color: #e9edef; margin-bottom: 20px;">WhatsApp Clone</h2>
+                <input type="text" id="username-input" placeholder="Enter Username"
+                    style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: none; background: #2a3942; color: #fff;">
+                <button id="login-btn"
+                    style="width: 100%; padding: 10px; background: #00a884; border: none; border-radius: 5px; color: #111b21; font-weight: bold; cursor: pointer;">Start
+                    Chatting</button>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div class="header">
+                <div class="avatar" style="cursor: pointer; position: relative;" id="my-profile-container"
+                    onclick="toggleProfileMenu()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+                        alt="My Profile" id="my-profile-img">
+                    <input type="file" id="profile-upload" style="display:none" accept="image/*">
+
+                    <!-- Profile Context Menu -->
+                    <div id="profile-context-menu"
+                        style="display: none; position: absolute; top: 50px; left: 0; background: #233138; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); width: 150px; z-index: 100;">
+                        <ul style="list-style: none; padding: 0; margin: 0; text-align: left;">
+                            <li style="padding: 10px 15px; border-bottom: 1px solid #111b21; cursor: pointer; color: #e9edef;"
+                                onclick="viewMyProfile(); event.stopPropagation();">View photo</li>
+                            <li style="padding: 10px 15px; border-bottom: 1px solid #111b21; cursor: pointer; color: #e9edef;"
+                                onclick="triggerProfileUpload(); event.stopPropagation();">Upload photo</li>
+                            <li style="padding: 10px 15px; cursor: pointer; color: #ea0038;"
+                                onclick="removeProfilePicture(); event.stopPropagation();">Remove photo</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="nav-icons">
+                    <i data-lucide="message-square-plus"
+                        onclick="document.getElementById('new-chat-drawer').style.left = '0'" title="New Chat"
+                        style="cursor:pointer;"></i>
+                    <i data-lucide="more-vertical" onclick="toggleFilterMenu()" title="Filter Chats"
+                        style="cursor:pointer;"></i>
+                </div>
+            </div>
+
+            <!-- Filter Menu -->
+            <div id="filter-menu"
+                style="display: none; position: absolute; top: 60px; right: 20px; background: #233138; width: 200px; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 100;">
+                <div class="filter-header" style="padding: 15px; color: #8696a0; font-size: 14px; font-weight: bold;">
+                    Filter chats by</div>
+                <div class="filter-option" onclick="applyFilter('unread')"
+                    style="padding: 10px 20px; color: #e9edef; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <i data-lucide="message-circle" style="width: 16px;"></i> Unread
+                </div>
+                <div class="filter-option" onclick="applyFilter('favorites')"
+                    style="padding: 10px 20px; color: #e9edef; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <i data-lucide="heart" style="width: 16px;"></i> Favorites
+                </div>
+                <div class="filter-option" onclick="applyFilter('contacts')"
+                    style="padding: 10px 20px; color: #e9edef; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <i data-lucide="user" style="width: 16px;"></i> Contacts
+                </div> <!-- Rest will be static/dummy for now -->
+                <div class="filter-option" onclick="applyFilter('all')"
+                    style="padding: 10px 20px; color: #e9edef; display: flex; align-items: center; gap: 10px; cursor: pointer; border-top: 1px solid #374045;">
+                    <i data-lucide="list" style="width: 16px;"></i> Show All
+                </div>
+            </div>
+
+            <!-- New Chat Drawer -->
+            <div id="new-chat-drawer"
+                style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: #111b21; transition: 0.3s; z-index: 150; display: flex; flex-direction: column;">
+                <div class="drawer-header"
+                    style="height: 108px; background: #202c33; display: flex; align-items: flex-end; padding: 0 20px 20px;">
+                    <div style="display: flex; align-items: center; gap: 20px; color: #e9edef; width: 100%;">
+                        <i data-lucide="arrow-left"
+                            onclick="document.getElementById('new-chat-drawer').style.left = '-100%'"
+                            style="cursor: pointer;"></i>
+                        <h2 style="margin: 0; font-size: 19px;">New chat</h2>
+                    </div>
+                </div>
+                <div style="padding: 10px;">
+                    <input type="text" placeholder="Search name or number"
+                        style="width: 100%; padding: 10px; background: #202c33; border: none; border-radius: 8px; color: #e9edef; margin-bottom: 20px;">
+
+                    <div
+                        style="display: flex; align-items: center; gap: 15px; padding: 15px 0; color: #e9edef; cursor: pointer; border-bottom: 1px solid #202c33;">
+                        <div
+                            style="width: 40px; height: 40px; background: #00a884; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="users" style="color: white;"></i>
+                        </div>
+                        <span style="font-weight: 500;">New group</span>
+                    </div>
+
+                    <div
+                        style="display: flex; align-items: center; gap: 15px; padding: 15px 0; color: #e9edef; cursor: pointer; border-bottom: 1px solid #202c33;">
+                        <div
+                            style="width: 40px; height: 40px; background: #202c33; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="user-plus" style="color: #00a884;"></i>
+                        </div>
+                        <span style="font-weight: 500;">New contact</span>
+                    </div>
+
+                    <div style="color: #00a884; margin: 20px 0 10px; font-size: 14px;">Frequently contacted</div>
+                    <div id="new-chat-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <div class="search-input">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search or start a new chat">
+                </div>
+            </div>
+
+            <!-- Status Bar (inject above chat list) -->
+            <div id="status-bar" class="status-bar" style="display:none;">
+                <!-- Upload Button -->
+                <div class="status-item" onclick="document.getElementById('status-upload').click()">
+                    <div class="status-ring" style="border-color: #00a884;">
+                        <i data-lucide="plus" style="color: white; margin-top: 12px;"></i>
+                    </div>
+                    <span style="font-size: 11px; color: #aaa; margin-top: 5px;">Add Status</span>
+                    <input type="file" id="status-upload" style="display:none" accept="image/*,video/*">
+                </div>
+
+                <!-- View My Status -->
+                <div class="status-item" onclick="viewStatus()">
+                    <div class="status-ring" style="border-color: #555;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+                            id="my-status-img">
+                    </div>
+                    <span style="font-size: 11px; color: #aaa; margin-top: 5px;">My Status</span>
+                </div>
+            </div>
+
+            <div id="chat-list">
+                <!-- Chat items will go here -->
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main id="chat-area">
+            <div class="welcome-screen">
+                <div class="whatsapp-intro">
+                    <i data-lucide="smartphone" style="width: 100px; height: 100px; color: var(--icon-gray);"></i>
+                    <h1>WhatsApp for Windows</h1>
+                    <p>Send and receive messages without keeping your phone online.<br>Use WhatsApp on up to 4 linked
+                        devices and 1 phone at the same time.</p>
+                </div>
+            </div>
+        </main>
+
+
+        <!-- Right Sidebar -->
+        <aside id="right-sidebar">
+            <!-- Dynamic Content -->
+        </aside>
+
+        <!-- New Group Drawer: Select Participants -->
+        <div id="new-group-drawer"
+            style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: #111b21; transition: 0.3s; z-index: 160; display: flex; flex-direction: column;">
+            <div class="drawer-header"
+                style="height: 108px; background: #202c33; display: flex; align-items: flex-end; padding: 0 20px 20px;">
+                <div style="display: flex; align-items: center; gap: 20px; color: #e9edef; width: 100%;">
+                    <i data-lucide="arrow-left"
+                        onclick="document.getElementById('new-group-drawer').style.left = '-100%'"
+                        style="cursor: pointer;"></i>
+                    <h2 style="margin: 0; font-size: 19px;">Add group participants</h2>
+                </div>
+            </div>
+            <div style="padding: 10px; flex: 1; overflow-y: auto;">
+                <div id="group-participants-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div style="padding: 20px; text-align: center; background: #202c33;">
+                <button onclick="showGroupInfoStep()"
+                    style="background: #00a884; color: #111b21; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;">Next</button>
+            </div>
+        </div>
+
+        <!-- New Group Info Drawer: Subject -->
+        <div id="group-info-drawer"
+            style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: #111b21; transition: 0.3s; z-index: 170; display: flex; flex-direction: column;">
+            <div class="drawer-header"
+                style="height: 108px; background: #202c33; display: flex; align-items: flex-end; padding: 0 20px 20px;">
+                <div style="display: flex; align-items: center; gap: 20px; color: #e9edef; width: 100%;">
+                    <i data-lucide="arrow-left"
+                        onclick="document.getElementById('group-info-drawer').style.left = '-100%'"
+                        style="cursor: pointer;"></i>
+                    <h2 style="margin: 0; font-size: 19px;">New group</h2>
+                </div>
+            </div>
+            <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <div
+                    style="width: 100px; height: 100px; background: #374045; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i data-lucide="camera" style="color: #e9edef; width: 40px; height: 40px;"></i>
+                </div>
+                <input type="text" id="group-subject-input" placeholder="Group subject"
+                    style="width: 100%; border: none; border-bottom: 2px solid #00a884; background: transparent; color: #e9edef; padding: 10px; font-size: 16px;">
+                <button onclick="createGroup()"
+                    style="background: #00a884; color: #111b21; border: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; cursor: pointer; margin-top: 20px;">
+                    <i data-lucide="check" style="vertical-align: middle;"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- In-Call UI Overlay -->
+        <div id="call-overlay" class="modal-overlay">
+            <div class="call-modal" style="width: 600px; height: 500px; position:relative;">
+                <!-- Remote Video -->
+                <video id="remote-video" autoplay playsinline
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;"></video>
+                <!-- Local Video -->
+                <video id="local-video" autoplay playsinline muted
+                    style="width: 150px; height: 100px; position: absolute; bottom: 20px; right: 20px; border-radius: 10px; border: 2px solid white; object-fit: cover;"></video>
+
+                <div style="position: absolute; top: 20px; left: 20px; text-shadow: 0 1px 3px black;">
+                    <h3 id="call-ui-name">User Name</h3>
+                    <p id="call-ui-status">Calling...</p>
+                </div>
+
+                <div class="call-actions"
+                    style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);">
+                    <button class="btn-circle btn-muted"><i data-lucide="mic-off"></i></button>
+                    <button class="btn-circle btn-reject" onclick="endCall()"><i data-lucide="phone-off"></i></button>
+                    <button class="btn-circle btn-muted"><i data-lucide="video"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incoming Call Modal -->
+        <div id="incoming-call-modal" class="modal-overlay">
+            <div class="modal-content">
+                <img src="" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;"
+                    id="incoming-call-avatar">
+                <h4 id="incoming-call-name">Incoming Call...</h4>
+                <div class="call-actions" style="justify-content: center;">
+                    <button class="btn-circle btn-reject" onclick="rejectCall()"><i
+                            data-lucide="phone-off"></i></button>
+                    <button class="btn-circle btn-accept" onclick="acceptCall()"><i data-lucide="phone"></i></button>
+                </div>
+            </div>
+        </div>
+        <!-- Status View Modal -->
+        <div id="status-view-modal" class="modal-overlay" style="z-index: 3000;">
+            <div style="position: relative; max-width: 90%; max-height: 90%;">
+                <img id="status-view-img" src="" style="max-height: 80vh; border-radius: 10px;">
+                <div style="text-align: center; margin-top: 10px;">
+                    <button class="btn-circle btn-reject"
+                        onclick="document.getElementById('status-view-modal').style.display='none'"><i
+                            data-lucide="x"></i></button>
+                    <button class="btn-circle btn-reject" style="background: #ea0038;" onclick="deleteStatus()"><i
+                            data-lucide="trash-2"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io -->
+    <script src="http://localhost:5001/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
